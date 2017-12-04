@@ -14,7 +14,7 @@ import rx.Observable
 class MainPresenterSimpleSpec : Spek({
 
     val distancesUseCase: DistancesUseCase = mock()
-    val runtimePermissionDelegate: RuntimePermissionsDelegate = mock()
+    val runtimePermissionDelegate: PermissionsManager = mock()
     val view: MainPresenter.View = mock()
 
     val tested by memoized {

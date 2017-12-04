@@ -18,7 +18,7 @@ class DistancePresenterSpec : Spek({
     val distanceProvider: DistanceProvider = mock()
     val tested by memoized {  DistancePresenter(distanceProvider) }
 
-    var distanceSubject: PublishSubject<List<Int>> = PublishSubject.create()
+    var distanceSubject: PublishSubject<IntArray> = PublishSubject.create()
     var unitSubject: PublishSubject<Int> = PublishSubject.create()
 
     rxGroup("DistancePresenter") {
@@ -46,7 +46,7 @@ class DistancePresenterSpec : Spek({
 
             context("first distance provided of 30 km") {
                 beforeEachTest {
-                    distanceSubject.onNext(listOf(30, 19))
+                    distanceSubject.onNext(intArrayOf(30, 19))
                     unitSubject.onNext(0)
                 }
 
@@ -55,7 +55,7 @@ class DistancePresenterSpec : Spek({
                 }
 
                 on("a distance update to 20 km") {
-                    distanceSubject.onNext(listOf(20, 12))
+                    distanceSubject.onNext(intArrayOf(20, 12))
                     unitSubject.onCompleted()
 
                     it("should display 20") {
@@ -82,7 +82,7 @@ class DistancePresenterSpec : Spek({
 
             context("just distance update") {
                 beforeEachTest {
-                    distanceSubject.onNext(listOf(30, 19))
+                    distanceSubject.onNext(intArrayOf(30, 19))
                 }
 
                 it("should not display 30") {
@@ -106,7 +106,7 @@ class DistancePresenterSpec : Spek({
 
             context("first distance provided of 30 km") {
                 beforeEachTest {
-                    distanceSubject.onNext(listOf(30, 19))
+                    distanceSubject.onNext(intArrayOf(30, 19))
                     unitSubject.onNext(0)
                 }
 
@@ -115,7 +115,7 @@ class DistancePresenterSpec : Spek({
                 }
 
                 on("a distance update to 3 km") {
-                    distanceSubject.onNext(listOf(3, 2))
+                    distanceSubject.onNext(intArrayOf(3, 2))
 
                     it("should not display 3") {
                         verify(view, never()).displayDistance("2")
@@ -139,7 +139,7 @@ class DistancePresenterSpec : Spek({
 
             context("first distance provided of 30 km") {
                 beforeEachTest {
-                    distanceSubject.onNext(listOf(30, 19))
+                    distanceSubject.onNext(intArrayOf(30, 19))
                     unitSubject.onNext(0)
                     unitSubject.onCompleted()
                 }
@@ -153,7 +153,7 @@ class DistancePresenterSpec : Spek({
                 }
 
                 on("a distance update to 20 km") {
-                    distanceSubject.onNext(listOf(20, 12))
+                    distanceSubject.onNext(intArrayOf(20, 12))
 
                     it("should not display 3") {
                         verify(view, never()).displayDistance("20")

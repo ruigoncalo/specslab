@@ -10,12 +10,13 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
+import rx.Observable
 import rx.subjects.PublishSubject
 
 class MainPresenterSpec : Spek({
 
     val distancesUseCase: DistancesUseCase = mock()
-    val runtimePermissionDelegate: RuntimePermissionsDelegate = mock()
+    val runtimePermissionDelegate: PermissionsManager = mock()
     val view: MainPresenter.View = mock()
 
     val tested by memoized {
@@ -25,54 +26,35 @@ class MainPresenterSpec : Spek({
 
     var permissionPubSub: PublishSubject<Boolean> = PublishSubject.create()
     var showRationalePubSub: PublishSubject<Boolean> = PublishSubject.create()
-    var distancesPubSub: PublishSubject<Int> = PublishSubject.create()
 
-    beforeEachTest {
-        whenever(runtimePermissionDelegate.checkPermission()).thenReturn(permissionPubSub)
-        whenever(runtimePermissionDelegate.shouldShowRationale()).thenReturn(showRationalePubSub)
-        whenever(distancesUseCase.distances()).thenReturn(distancesPubSub)
-    }
+    rxGroup("MainPresenter") {
 
-    afterEachTest {
-        reset(distancesUseCase)
-        reset(view)
-
-        permissionPubSub = PublishSubject.create()
-        showRationalePubSub = PublishSubject.create()
-        distancesPubSub = PublishSubject.create()
-    }
-
-    describe("start") {
         beforeEachTest {
-            tested.start()
+            whenever(runtimePermissionDelegate.checkPermission()).thenReturn(permissionPubSub)
+            whenever(runtimePermissionDelegate.shouldShowRationale()).thenReturn(showRationalePubSub)
+            whenever(distancesUseCase.distances()).thenReturn(Observable.just(10))
         }
 
-        it("should check permission") {
-            verify(runtimePermissionDelegate).checkPermission()
+        afterEachTest {
+            reset(distancesUseCase)
+            reset(view)
+
+            permissionPubSub = PublishSubject.create()
+            showRationalePubSub = PublishSubject.create()
         }
 
-        context("permission is granted") {
+        describe("start") {
             beforeEachTest {
-                permissionPubSub.onNext(true)
+                tested.start()
             }
 
-            it("should get distances") {
-                verify(distancesUseCase).distances()
-            }
-        }
-
-        context("permission is denied") {
-            beforeEachTest {
-                permissionPubSub.onNext(false)
+            it("should check permission") {
+                verify(runtimePermissionDelegate).checkPermission()
             }
 
-            it("should request permission") {
-                verify(runtimePermissionDelegate).requestPermissions()
-            }
-
-            given("permission granted") {
+            context("permission is granted") {
                 beforeEachTest {
-                    tested.onPermissionGranted()
+                    permissionPubSub.onNext(true)
                 }
 
                 it("should get distances") {
@@ -80,28 +62,48 @@ class MainPresenterSpec : Spek({
                 }
             }
 
-            given("permission denied") {
+            context("permission is denied") {
                 beforeEachTest {
-                    tested.onPermissionDenied()
+                    permissionPubSub.onNext(false)
                 }
 
-                it("should ask for rationale") {
-                    verify(runtimePermissionDelegate).shouldShowRationale()
+                it("should request permission") {
+                    verify(runtimePermissionDelegate).requestPermissions()
                 }
 
-                on("positive reply") {
-                    showRationalePubSub.onNext(true)
+                given("permission granted") {
+                    beforeEachTest {
+                        tested.onPermissionGranted()
+                    }
 
-                    it("should show rationale") {
-                        verify(view).showRationale()
+                    it("should get distances") {
+                        verify(distancesUseCase).distances()
                     }
                 }
 
-                on("negative reply") {
-                    showRationalePubSub.onNext(false)
+                given("permission denied") {
+                    beforeEachTest {
+                        tested.onPermissionDenied()
+                    }
 
-                    it("should show settings") {
-                        verify(view).showSettings()
+                    it("should ask for rationale") {
+                        verify(runtimePermissionDelegate).shouldShowRationale()
+                    }
+
+                    on("positive reply") {
+                        showRationalePubSub.onNext(true)
+
+                        it("should show rationale") {
+                            verify(view).showRationale()
+                        }
+                    }
+
+                    on("negative reply") {
+                        showRationalePubSub.onNext(false)
+
+                        it("should show settings") {
+                            verify(view).showSettings()
+                        }
                     }
                 }
             }

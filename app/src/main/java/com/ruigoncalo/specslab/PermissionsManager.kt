@@ -2,11 +2,11 @@ package com.ruigoncalo.specslab
 
 import rx.Observable
 
-interface RuntimePermissionsDelegate {
+interface PermissionsManager {
 
     fun checkPermission(): Observable<Boolean>
 
-    fun requestPermissions()
+    fun requestPermissions() : Observable<Boolean>
 
     fun shouldShowRationale(): Observable<Boolean>
 }

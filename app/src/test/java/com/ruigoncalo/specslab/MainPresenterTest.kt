@@ -12,7 +12,7 @@ import rx.Observable
 class MainPresenterTest {
 
     private val distancesUseCase: DistancesUseCase = mock()
-    private val runtimePermissionDelegate: RuntimePermissionsDelegate = mock()
+    private val runtimePermissionDelegate: PermissionsManager = mock()
     private val view: MainPresenter.View = mock()
 
     private val tested = MainPresenter(runtimePermissionDelegate, distancesUseCase)

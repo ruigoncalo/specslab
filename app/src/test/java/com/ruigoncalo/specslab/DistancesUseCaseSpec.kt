@@ -16,7 +16,7 @@ class DistancesUseCaseSpec : Spek({
     val distanceProvider: DistanceProvider = mock()
     val tested by memoized { DistancesUseCase(distanceProvider) }
 
-    var distanceSubject: PublishSubject<List<Int>> = PublishSubject.create()
+    var distanceSubject: PublishSubject<IntArray> = PublishSubject.create()
     var unitSubject: PublishSubject<Int> = PublishSubject.create()
 
     var testSubscriber: TestSubscriber<Int> = TestSubscriber()
@@ -40,7 +40,7 @@ class DistancesUseCaseSpec : Spek({
 
         context("distance update of 2 km") {
             beforeEachTest {
-                distanceSubject.onNext(listOf(2, 1))
+                distanceSubject.onNext(intArrayOf(2, 1))
                 unitSubject.onNext(0)
             }
 
@@ -59,7 +59,7 @@ class DistancesUseCaseSpec : Spek({
 
         context("distance update of 3 km") {
             beforeEachTest {
-                distanceSubject.onNext(listOf(3, 2))
+                distanceSubject.onNext(intArrayOf(3, 2))
                 unitSubject.onNext(0)
             }
 
@@ -69,7 +69,7 @@ class DistancesUseCaseSpec : Spek({
 
             context("distance update of 21 km") {
                 beforeEachTest {
-                    distanceSubject.onNext(listOf(21, 13))
+                    distanceSubject.onNext(intArrayOf(21, 13))
                 }
 
                 it("should emit 12 as second value") {
@@ -79,7 +79,7 @@ class DistancesUseCaseSpec : Spek({
 
                 context("distance update of 10 km") {
                     beforeEachTest {
-                        distanceSubject.onNext(listOf(10, 6))
+                        distanceSubject.onNext(intArrayOf(10, 6))
                     }
 
                     it("should emit 11 as third value") {

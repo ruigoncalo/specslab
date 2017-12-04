@@ -4,8 +4,8 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 
-class MainPresenter(private val runtimePermissionsDelegate: PermissionsManager,
-                    private val distancesUseCase: DistancesUseCase) {
+class Presenter(private val permissionsManager: PermissionsManager,
+                private val distanceProvider: DistanceProvider) {
 
     private lateinit var view: View
 
@@ -16,57 +16,48 @@ class MainPresenter(private val runtimePermissionsDelegate: PermissionsManager,
     }
 
     fun start() {
-        requestPermission()
-    }
-
-    fun onRationaleButtonClicked() {
-        requestPermission()
-    }
-
-    fun onPermissionGranted() {
-        getDistances()
-    }
-
-    fun onPermissionDenied() {
         subscriptions.add(
-                runtimePermissionsDelegate.shouldShowRationale()
-                        .subscribe { showRationale ->
-                            if (showRationale) {
-                                view.showRationale()
-                            } else {
-                                view.showSettings()
-                            }
-                        })
-    }
-
-    fun stop() {
-        subscriptions.clear()
-    }
-
-    private fun requestPermission() {
-        subscriptions.add(
-                runtimePermissionsDelegate.checkPermission()
+                permissionsManager.checkPermission()
                         .subscribe { isGranted ->
                             if (isGranted) {
                                 getDistances()
                             } else {
-                                runtimePermissionsDelegate.requestPermissions()
+                                requestPermission()
                             }
                         })
     }
 
+    private fun requestPermission() {
+        subscriptions.add(
+                permissionsManager.requestPermissions()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { isGranted ->
+                            if (isGranted) {
+                                getDistances()
+                            } else {
+                                view.showError()
+                            }
+                        }
+        )
+    }
+
     private fun getDistances() {
         subscriptions.add(
-                distancesUseCase.distances()
+                distanceProvider.distances()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe { distance -> view.showDistances(distance.toString()) }
         )
     }
 
-    interface View {
-        fun showRationale()
-        fun showSettings()
-        fun showDistances(distance: String)
+    fun stop() {
+        subscriptions.clear()
     }
+
+    interface View {
+        fun showDistances(distance: String)
+        fun showError()
+    }
+
 }

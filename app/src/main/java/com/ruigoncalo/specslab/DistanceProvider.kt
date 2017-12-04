@@ -4,7 +4,7 @@ import rx.Observable
 
 open class DistanceProvider {
 
-    open fun distances(): Observable<List<Int>> {
+    open fun distances(): Observable<IntArray> {
         return Observable.empty()
     }
 
